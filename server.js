@@ -1,20 +1,3 @@
-const http = require('http');
-
-const server = http.createServer((req, res) => {
-  if (req.url === '/') {
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end('<h1>Welcome to Proxy API</h1>');
-  } else {
-    res.writeHead(404, { 'Content-Type': 'text/plain' });
-    res.end('404: Not Found');
-  }
-});
-
-server.listen(3000, () => {
-  console.log('Server running on port 3000');
-});
-
-
 // Fungsi untuk menghasilkan UUID v4 varian 2
 function generateUUIDv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -37,10 +20,13 @@ async function handleRequest(request) {
     if (url.pathname === '/') {
         return new Response(`
             <html>
-<script>
-  window.location.href = 'https://bmkg.xyz';
-</script>
-
+            <head><title>Redirecting...</title></head>
+            <body>
+                <h1>Redirecting...</h1>
+                <script>
+                    window.location.href = 'https://bmkg.xyz';
+                </script>
+            </body>
             </html>
         `, {
             headers: { 'Content-Type': 'text/html' }
@@ -75,27 +61,25 @@ async function handleRequest(request) {
             const proxies = text.split('\n').filter(proxy => proxy.trim() !== '');
 
             // Jika sub1 adalah "RANDOM", pilih proxy secara acak
-            // Jika sub1 atau sub2 adalah "RANDOM", pilih proxy secara acak
-let proxiesToShow = [];
-if (countryParam1 === 'RANDOM' || countryParam2 === 'RANDOM') {
-    // Pilih proxy secara acak
-    for (let i = 0; i < count; i++) {
-        const randomProxy = proxies[Math.floor(Math.random() * proxies.length)];
-        proxiesToShow.push(randomProxy);
-    }
-} else {
-    // Filter proxies berdasarkan negara jika sub1 atau sub2 tidak "RANDOM"
-    const filteredProxies = proxies.filter(proxy => {
-        const [, , country] = proxy.split(',');
-        const upperCountry = country.toUpperCase();
-        return (countryParam1 && upperCountry === countryParam1.toUpperCase()) ||
-               (countryParam2 && upperCountry === countryParam2.toUpperCase());
-    });
+            let proxiesToShow = [];
+            if (countryParam1 === 'RANDOM' || countryParam2 === 'RANDOM') {
+                // Pilih proxy secara acak
+                for (let i = 0; i < count; i++) {
+                    const randomProxy = proxies[Math.floor(Math.random() * proxies.length)];
+                    proxiesToShow.push(randomProxy);
+                }
+            } else {
+                // Filter proxies berdasarkan negara
+                const filteredProxies = proxies.filter(proxy => {
+                    const [, , country] = proxy.split(',');
+                    const upperCountry = country.toUpperCase();
+                    return (countryParam1 && upperCountry === countryParam1.toUpperCase()) ||
+                           (countryParam2 && upperCountry === countryParam2.toUpperCase());
+                });
 
-    // Ambil sesuai dengan count
-    proxiesToShow = filteredProxies.slice(0, count);
-}
-
+                // Ambil sesuai dengan count
+                proxiesToShow = filteredProxies.slice(0, count);
+            }
 
             const proxyUrls = [];
 
